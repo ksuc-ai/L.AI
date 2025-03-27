@@ -74,6 +74,20 @@ namespace L_AI.Options
         [Description("Only used if impossible to get context length from the API.")]
         public int ContextLength { get; set; } = 4096;
 
+
+        //
+        // Limited autocomplete context parameters
+        //
+        [Category("Autocomplete parameters")]
+        [DisplayName("Limit code context")]
+        [Description("Execute autocomplete with a limited context length.")]
+        public bool LimitAutocompleteContext { get; set; } = false;
+
+        [Category("Autocomplete parameters")]
+        [DisplayName("Limited code context length")]
+        [Description("Limited code context length, applied when limited code context is true.")]
+        public int LimitedContextLength { get; set; } = 100;
+
         //
         //      Suggestions Settings
         //

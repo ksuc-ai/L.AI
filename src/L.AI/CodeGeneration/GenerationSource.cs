@@ -38,8 +38,15 @@ namespace L_AI.CodeGeneration
         {
             IsBusy = true;
 
+            var settings = GeneralOptions.Instance;
+
             if (GenerationManager.IsConnected)
                 await MenuStatusHandler.SetIconColorAsync(MenuStatusHandler.IconStatusColor.Blue);
+
+            if (settings.LimitAutocompleteContext)
+            {
+               TrimSentContext(ref code, ref position, settings.LimitedContextLength);
+            }
 
             var prompt = BuildPrompt(code, position, extraCode);
             var stopStrings = BuildStopStrings(singleline);
@@ -64,6 +71,35 @@ namespace L_AI.CodeGeneration
 
             await MenuStatusHandler.SetIconColorAsync(MenuStatusHandler.IconStatusColor.Green);
             return generationRequest.Data;
+        }
+
+        private void TrimSentContext(ref string code, ref int position, int contextLength)
+        {
+            int codeLength = code.Length;
+
+            if (codeLength <= contextLength)
+                return;
+
+            int codePostfixLength = codeLength-position;
+            int middle = contextLength/2;
+
+            if(middle>position)
+            {
+                // Context overflows at the beginning of file
+                code = code.Substring(0, contextLength);
+                return;
+            }
+            else if(middle>codePostfixLength)
+            {
+                // Context overflows at the end of file
+                code = code.Substring(codeLength - contextLength);
+                position = contextLength-codePostfixLength;
+                return;
+            }
+
+            // Context does not overflow
+            code = code.Substring(position - middle, contextLength);
+            position = middle;
         }
 
         private string BuildPrompt(string code, int position, IEnumerable<string> extraCode)
